@@ -51,8 +51,15 @@ export class EDAAppStack extends cdk.Stack {
     new s3n.SnsDestination(newImageTopic)
   );
 
+  const mailerFn = new lambdanode.NodejsFunction(this, "mailer-function", {
+    runtime: lambda.Runtime.NODEJS_16_X,
+    memorySize: 1024,
+    timeout: cdk.Duration.seconds(3),
+    entry: `${__dirname}/../lambdas/mailer.ts`,
+  });
+
   newImageTopic.addSubscription(
-    new subs.SqsSubscription(imageProcessQueue)
+    new subs.LambdaSubscription(mailerFn)
   );
 
   // SQS --> Lambda
@@ -66,26 +73,6 @@ export class EDAAppStack extends cdk.Stack {
     // Permissions
 
     imagesBucket.grantRead(processImageFn);
-
-    const mailerQ = new sqs.Queue(this, "mailer-queue", {
-      receiveMessageWaitTime: cdk.Duration.seconds(10),
-    });
-
-    const mailerFn = new lambdanode.NodejsFunction(this, "mailer-function", {
-      runtime: lambda.Runtime.NODEJS_16_X,
-      memorySize: 1024,
-      timeout: cdk.Duration.seconds(3),
-      entry: `${__dirname}/../lambdas/mailer.ts`,
-    });
-
-    newImageTopic.addSubscription(new subs.SqsSubscription(mailerQ));
-
-    const newImageMailEventSource = new events.SqsEventSource(mailerQ, {
-      batchSize: 5,
-      maxBatchingWindow: cdk.Duration.seconds(5),
-    }); 
-
-    mailerFn.addEventSource(newImageMailEventSource);
 
     mailerFn.addToRolePolicy(
       new iam.PolicyStatement({
