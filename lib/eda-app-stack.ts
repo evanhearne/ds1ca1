@@ -39,8 +39,23 @@ export class EDAAppStack extends cdk.Stack {
 
     // Integration infrastructure
 
+    // Create Queue for DLQ
+
+    const deadLetterQueue = new sqs.Queue(this,
+      "dead-letter-queue", {
+        receiveMessageWaitTime: cdk.Duration.seconds(10)
+      }
+    )
+
+    // Create DLQ
+    const deadLetterQueue1: sqs.DeadLetterQueue = {
+      queue: deadLetterQueue,
+      maxReceiveCount: 1
+    }
+
     const imageProcessQueue = new sqs.Queue(this, "img-created-queue", {
       receiveMessageWaitTime: cdk.Duration.seconds(10),
+      deadLetterQueue: deadLetterQueue1
     });
 
     const newImageTopic = new sns.Topic(this, "NewImageTopic", {
