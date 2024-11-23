@@ -72,7 +72,8 @@ export class EDAAppStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(15),
       memorySize: 128,
       environment: {
-        DLQ_URL: deadLetterQueue.queueUrl
+        DLQ_URL: deadLetterQueue.queueUrl,
+        IMAGE_TABLE_NAME: imageTable.tableName
       }
     }
   );
@@ -125,6 +126,7 @@ export class EDAAppStack extends cdk.Stack {
     // Permissions
 
     imagesBucket.grantRead(processImageFn);
+    imageTable.grantReadWriteData(processImageFn);
 
     mailerFn.addToRolePolicy(
       new iam.PolicyStatement({
