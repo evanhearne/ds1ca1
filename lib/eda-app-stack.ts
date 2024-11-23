@@ -11,7 +11,6 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 
 import { Construct } from "constructs";
-import { DynamoDB, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class EDAAppStack extends cdk.Stack {
@@ -72,6 +71,9 @@ export class EDAAppStack extends cdk.Stack {
       entry: `${__dirname}/../lambdas/processImage.ts`,
       timeout: cdk.Duration.seconds(15),
       memorySize: 128,
+      environment: {
+        DLQ_URL: deadLetterQueue.queueUrl
+      }
     }
   );
 
@@ -91,6 +93,10 @@ export class EDAAppStack extends cdk.Stack {
   newImageTopic.addSubscription(
     new subs.LambdaSubscription(mailerFn)
   );
+
+  newImageTopic.addSubscription(
+    new subs.SqsSubscription(imageProcessQueue)
+  )
 
   // SQS --> Lambda
     const newImageEventSource = new events.SqsEventSource(imageProcessQueue, {
@@ -116,6 +122,15 @@ export class EDAAppStack extends cdk.Stack {
       })
     );
 
+    processImageFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "sqs:sendmessage"
+        ],
+        resources: ["*"],
+      })
+    )
     
 
     // Output

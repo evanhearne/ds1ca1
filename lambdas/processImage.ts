@@ -5,10 +5,20 @@ import {
   PutObjectCommandInput,
   GetObjectCommandInput,
   S3Client,
-  PutObjectCommand,
+  PutObjectCommand
 } from "@aws-sdk/client-s3";
 
+import {
+  SQSClient,
+  SendMessageCommand,
+  SendMessageCommandInput
+} from '@aws-sdk/client-sqs'
+
 const s3 = new S3Client();
+const sqs = new SQSClient();
+
+// Replace with your actual DLQ URL
+const DLQ_URL = process.env.DLQ_URL; 
 
 export const handler: SQSHandler = async (event) => {
   console.log("Event ", JSON.stringify(event));
@@ -32,6 +42,23 @@ export const handler: SQSHandler = async (event) => {
           };
           origimage = await s3.send(new GetObjectCommand(params));
           // Process the image ......
+          // if srcKey i.e. filename does not contain .jpeg or .png 
+          if (!srcKey.endsWith('.jpeg') || !srcKey.endsWith('.png')) {
+            // pass message to dlq
+            console.log(`Unsupported file type: ${srcKey}`);
+
+            // Send a message to the DLQ
+            const dlqMessageParams: SendMessageCommandInput = {
+              QueueUrl: DLQ_URL, // Dead Letter Queue URL
+              MessageBody: JSON.stringify({
+                error: "Unsupported file type",
+                srcBucket,
+                srcKey,
+              }),
+            };
+            await sqs.send(new SendMessageCommand(dlqMessageParams));
+            console.log(`Message sent to DLQ for file: ${srcKey}`);
+          }
         } catch (error) {
           console.log(error);
         }
