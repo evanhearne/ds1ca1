@@ -57,7 +57,7 @@ export const handler: SQSHandler = async (event) => {
         },
         Subject: {
           Charset: "UTF-8",
-          Data: `New Image Upload`,
+          Data: `Error with New Image Upload`,
         },
       },
       Source: SES_EMAIL_FROM,
