@@ -1,3 +1,22 @@
+## Assignment 2 (EDA app) - Distributed Systems.
 
+__Name:__ Evan Hearne
 
-aws s3 cp test.txt s3://a-bucket/test.txt --metadata '{"x-amz-meta-cms-id":"34533452"}'
+__YouTube Demo link__ - https://youtu.be/oPl6yHaW1zo
+
+The video includes an audio (I am a little unwell at the time of recording so please excuse my voice.)
+
+### Phase 1.
+
++ Confirmation Mailer - Fully implemented.
++ Rejection Mailer - Fully implemented.
++ Log Image -  Fully implemented. 
+
+### Phase 2 (if relevant).
+
++ Confirmation Mailer - Fully implemented
++ Rejection Mailer - Fully implemented 
++ Log Image - Fully implemented 
++ Update Table -  Fully implemented.
+
+Phase 3 has not been implemented. 
