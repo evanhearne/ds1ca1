@@ -12,7 +12,7 @@ The video includes an audio (I am a little unwell at the time of recording so pl
 + Rejection Mailer - Fully implemented.
 + Log Image -  Fully implemented. 
 
-### Phase 2 (if relevant).
+### Phase 2 .
 
 + Confirmation Mailer - Fully implemented
 + Rejection Mailer - Fully implemented 
